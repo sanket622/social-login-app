@@ -1,13 +1,52 @@
-<h1 class="title">Hello to Login Page</h1>
-  <div class="login-container">
-    <input type="text" placeholder="Enter your username" class="input-field" />
-    <input type="password" placeholder="Enter your password" class="input-field" />
-
-    <!-- Google Sign-In Button -->
-    <asl-google-signin-button
-      type="standard"
-      size="large"
-      theme="outline">
-    </asl-google-signin-button>
-    <button (click)="signInWithFB()">Sign In With Facebook</button>
+<div class="login-page">
+  <div class="login-card">
+    <h1 class="title">Welcome</h1>
+    <p class="subtitle">Sign in to continue</p>
+    
+    <div *ngIf="!user" class="login-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="Enter your username" class="input-field" />
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" class="input-field" />
+      </div>
+      
+      <button class="login-button">Sign In</button>
+      
+      <div class="divider">
+        <span>or continue with</span>
+      </div>
+      
+      <div class="social-buttons">
+        <!-- Google Sign-In Button -->
+        <div class="google-button-container">
+          <asl-google-signin-button
+            type="standard"
+            size="large"
+            theme="outline">
+          </asl-google-signin-button>
+        </div>
+        
+        <button class="facebook-button" (click)="signInWithFB()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9.19795 21.5H13.198V13.4901H16.8021L17.198 9.50977H13.198V7.5C13.198 6.94772 13.6457 6.5 14.198 6.5H17.198V2.5H14.198C11.4365 2.5 9.19795 4.73858 9.19795 7.5V9.50977H7.19795L6.80206 13.4901H9.19795V21.5Z" />
+          </svg>
+          Sign in with Facebook
+        </button>
+      </div>
+    </div>
+    
+    <!-- User info (if logged in) -->
+    <div *ngIf="user" class="already-logged-in">
+      <div class="user-avatar">
+        <img [src]="user.photoUrl || 'assets/default-avatar.png'" alt="User avatar">
+      </div>
+      <h2>{{ user.name }}</h2>
+      <p>{{ user.email }}</p>
+      <p class="redirect-message">Redirecting to dashboard...</p>
+    </div>
   </div>
+</div>
