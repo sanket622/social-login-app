@@ -1,0 +1,13 @@
+<h1>Hello to Dashboard Page</h1>
+<div style="text-align: center; margin-top: 20px;">
+  <button (click)="logout()">Logout</button>
+  
+  <!-- User Info -->
+  <div *ngIf="user" class="user-info" style="margin-top: 20px;">
+    <h3>Welcome, {{ user.name }}</h3>
+    <img [src]="user.photoUrl" alt="User photo" width="100" />
+    <div>
+      <p>{{ user.email }}</p>
+    </div>
+  </div>
+</div>
