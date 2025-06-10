@@ -8,7 +8,6 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SocialLoginService } from '../social-login.service';
 import { 
-  SocialAuthService, 
   SocialUser, 
   GoogleSigninButtonModule,
 } from '@abacritt/angularx-social-login';
@@ -30,19 +29,18 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   constructor(
     private socialLoginService: SocialLoginService,
-    private authService: SocialAuthService,
     private router: Router
   ) {
     this.user$ = this.socialLoginService.user$;
   }
 
   ngOnInit(): void {
-    console.log('SocialAuthService initialized:', this.authService);
+    console.log('Login component initialized');
     
     this.subscription.add(
-      this.authService.authState.subscribe({
+      this.user$.subscribe({
         next: (user) => {
-          console.log('Auth state changed:', user);
+          console.log('User state changed:', user);
           this.user = user;
           this.loggedIn = !!user;
           
@@ -52,7 +50,7 @@ export class LoginComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('Auth state error:', error);
+          console.error('User state error:', error);
         }
       })
     );
@@ -66,9 +64,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.socialLoginService.signInWithFB()
       .then((user) => {
         console.log('Facebook login successful:', user);
-          if (user) {
-            this.router.navigate(['/dashboard']);
-          }
+        // No need to navigate here as the subscription will handle it
       })
       .catch((error) => {
         console.error('Facebook login failed:', error);

@@ -1,14 +1,13 @@
 import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
-  OnInit
+  OnInit,
+  OnDestroy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SocialLoginService } from '../social-login.service';
-import { 
-  SocialAuthService, 
-  SocialUser, 
-} from '@abacritt/angularx-social-login';
+import { SocialUser } from '@abacritt/angularx-social-login';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,40 +17,44 @@ import {
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrls: ['./dashboard.component.css'],
 })
-export class DashboardComponent implements OnInit{
+export class DashboardComponent implements OnInit, OnDestroy {
+  user$: Observable<SocialUser | null>;
   loggedIn: boolean = false;
-    user: SocialUser | null = null;
-
+  user: SocialUser | null = null;
+  private subscription = new Subscription();
 
   constructor(
-  private socialLoginService: SocialLoginService,
-     private authService: SocialAuthService,
+    private socialLoginService: SocialLoginService
   ) {
-  
+     this.user$ = this.socialLoginService.user$;
   }
 
   ngOnInit(): void {
-    this.authService.authState.subscribe({
-      next: (user) => {
-        this.user = user;
-        this.loggedIn = !!user;
-        console.log('Dashboard: Auth state changed:', user);
-      },
-      error: (error) => {
-        console.error('Dashboard: Auth state error:', error);
-      }
-    });
-  }
-
-    logout() {
-    this.socialLoginService.signOut()
-      .then(() => {
-        this.user = null;
-        this.loggedIn = false;
-        console.log('Logged out successfully');
+    // Get current user immediately
+    this.loggedIn = !!this.user;
+    
+    // Subscribe to user changes
+    this.subscription.add(
+     this.user$.subscribe({
+        next: (user) => {
+          this.user = user;
+          this.loggedIn = !!user;
+          console.log('Dashboard: User state changed:', user);
+        },
+        error: (error) => {
+          console.error('Dashboard: User state error:', error);
+        }
       })
-      .catch(error => console.error('Logout error:', error));
+    );
   }
 
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
 
+  logout() {
+    this.socialLoginService.signOut()
+      .catch(error => console.error('Logout error:', error));
+    // No need to manually update user state as the subscription will handle it
+  }
 }
