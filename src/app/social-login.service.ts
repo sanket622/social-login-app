@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {
   SocialAuthService,
   FacebookLoginProvider,
+  GoogleLoginProvider,
   SocialUser,
 } from '@abacritt/angularx-social-login';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -12,6 +13,8 @@ import { Router } from '@angular/router';
 })
 export class SocialLoginService {
   private userSubject = new BehaviorSubject<SocialUser | null>(null);
+  private loggedInSubject = new BehaviorSubject<boolean>(false);
+  private redirectUrl: string = '/dashboard';
 
   constructor(
     private authService: SocialAuthService,
@@ -20,8 +23,11 @@ export class SocialLoginService {
     // Subscribe to auth state changes
     this.authService.authState.subscribe((user) => {
       this.userSubject.next(user);
+      this.loggedInSubject.next(!!user);
+      
       if (user) {
         console.log('User logged in via service:', user);
+        this.router.navigate([this.redirectUrl]);
       }
     });
   }
@@ -29,6 +35,10 @@ export class SocialLoginService {
 
   signInWithFB(): Promise<SocialUser> {
     return this.authService.signIn(FacebookLoginProvider.PROVIDER_ID);
+  }
+  
+  signInWithGoogle(): Promise<SocialUser> {
+    return this.authService.signIn(GoogleLoginProvider.PROVIDER_ID);
   }
 
   signOut(): Promise<void> {
@@ -50,7 +60,23 @@ export class SocialLoginService {
     return this.userSubject.asObservable();
   }
 
+  get isLoggedIn$(): Observable<boolean> {
+    return this.loggedInSubject.asObservable();
+  }
+
   get currentUser(): SocialUser | null {
     return this.userSubject.value;
+  }
+  
+  get isLoggedIn(): boolean {
+    return this.loggedInSubject.value;
+  }
+  
+  setRedirectUrl(url: string): void {
+    this.redirectUrl = url;
+  }
+  
+  getRedirectUrl(): string {
+    return this.redirectUrl;
   }
 }

@@ -98,33 +98,49 @@
 
 .social-buttons {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.google-button-container {
-  display: flex;
   justify-content: center;
+  gap: 20px;
+  margin-top: 16px;
 }
 
-.facebook-button {
+.social-icon-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background-color: #1877f2;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 500;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background-color: white;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.facebook-button:hover {
-  background-color: #166fe5;
+.social-icon-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.google-button {
+  color: #4285F4;
+  overflow: hidden;
+}
+
+.google-button ::ng-deep .abcRioButton {
+  border-radius: 50% !important;
+  box-shadow: none !important;
+  width: 50px !important;
+  height: 50px !important;
+}
+
+.facebook-button {
+  color: #1877F2;
+}
+
+.social-icon {
+  width: 24px;
+  height: 24px;
 }
 
 .already-logged-in {

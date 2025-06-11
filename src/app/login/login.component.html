@@ -22,19 +22,15 @@
       
       <div class="social-buttons">
         <!-- Google Sign-In Button -->
-        <div class="google-button-container">
-          <asl-google-signin-button
-            type="standard"
-            size="large"
-            theme="outline">
-          </asl-google-signin-button>
+        <div class="social-icon-button google-button">
+          <asl-google-signin-button type="icon" size="medium"></asl-google-signin-button>
         </div>
         
-        <button class="facebook-button" (click)="signInWithFB()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M9.19795 21.5H13.198V13.4901H16.8021L17.198 9.50977H13.198V7.5C13.198 6.94772 13.6457 6.5 14.198 6.5H17.198V2.5H14.198C11.4365 2.5 9.19795 4.73858 9.19795 7.5V9.50977H7.19795L6.80206 13.4901H9.19795V21.5Z" />
+        <!-- Facebook Sign-In Button -->
+        <button class="social-icon-button facebook-button" (click)="signInWithFB()">
+          <svg class="social-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.34 11.93 5.96 14.22 5.96C15.31 5.96 16.45 6.15 16.45 6.15V8.62H15.19C13.95 8.62 13.56 9.39 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96C15.9 21.59 18.03 20.4 19.6 18.64C21.17 16.88 22.06 14.64 22.06 12.32C22.06 6.79 17.56 2.29 12.06 2.29L12 2.04Z" />
           </svg>
-          Sign in with Facebook
         </button>
       </div>
     </div>
