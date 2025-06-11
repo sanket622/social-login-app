@@ -18,27 +18,24 @@ export class SocialLoginService {
     private router: Router,
     private storageService: AuthService
   ) {
-    // Subscribe to auth state changes
-    this.authService.authState.subscribe((user) => {
-      if (user) {
-        console.log('User logged in via service:', user);
-        // Store user data using the centralized auth service
-        this.storageService.storeUser(user);
-        
-        // Check if this is a page refresh or new login
-        if (!this.storageService.isRefreshLogin()) {
-          this.storageService.markUserLoggedIn();
-          this.router.navigate([this.storageService.getRedirectUrl()]);
-        }
-      } else {
-        // Only clear user data if explicitly signed out
-        // Don't clear on page refresh when authState temporarily returns null
-        if (!this.storageService.currentUser) {
-          this.storageService.clearStoredUser();
-        }
-      }
-    });
+    this.authService.authState.subscribe(user => this.handleAuthStateChange(user));
   }
+
+  private handleAuthStateChange(user: SocialUser | null): void {
+  if (user) {
+    console.log('User logged in via service:', user);
+    this.storageService.storeUser(user);
+    
+    if (!this.storageService.isRefreshLogin()) {
+      this.storageService.markUserLoggedIn();
+      this.router.navigate([this.storageService.getRedirectUrl()]);
+    }
+  } else {
+    if (!this.storageService.currentUser) {
+      this.storageService.clearStoredUser();
+    }
+  }
+}
 
   signInWithFB(): Promise<SocialUser> {
     return this.authService.signIn(FacebookLoginProvider.PROVIDER_ID);
