@@ -20,37 +20,18 @@ import { Observable, Subscription } from 'rxjs';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrls: ['./login.component.css'],
 })
-export class LoginComponent implements OnInit, OnDestroy {
-  user$: Observable<SocialUser | null>;
-  isLoggedIn$: Observable<boolean>;
+export class LoginComponent implements OnInit{
   user: SocialUser | null = null;
-  private subscription = new Subscription();
 
   constructor(
     private socialLoginService: SocialLoginService
   ) {
-    this.user$ = this.socialLoginService.user$;
-    this.isLoggedIn$ = this.socialLoginService.isLoggedIn$;
+
   }
 
   ngOnInit(): void {
     console.log('Login component initialized');
-    
-    this.subscription.add(
-      this.user$.subscribe({
-        next: (user) => {
-          console.log('User state changed:', user);
-          this.user = user;
-        },
-        error: (error) => {
-          console.error('User state error:', error);
-        }
-      })
-    );
-  }
-
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+  
   }
 
   signInWithFB(): void {
@@ -63,7 +44,4 @@ export class LoginComponent implements OnInit, OnDestroy {
         console.error('Facebook login failed:', error);
       });
   }
-  
-  // Google sign-in is handled automatically by the asl-google-signin-button component
-  // No need for a signInWithGoogle method
 }
