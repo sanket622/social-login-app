@@ -5,62 +5,40 @@ import {
   GoogleLoginProvider,
   SocialUser,
 } from '@abacritt/angularx-social-login';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SocialLoginService {
-  private userSubject = new BehaviorSubject<SocialUser | null>(null);
-  private loggedInSubject = new BehaviorSubject<boolean>(false);
-  private redirectUrl: string = '/dashboard';
-
   constructor(
     private authService: SocialAuthService,
-    private router: Router
+    private router: Router,
+    private storageService: AuthService
   ) {
-    // Check for stored user data on initialization
-    const storedUser = localStorage.getItem('user_data');
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
-        this.userSubject.next(user);
-        this.loggedInSubject.next(true);
-        console.log('Loaded user from localStorage:', user);
-      } catch (e) {
-        console.error('Error parsing stored user data');
-        localStorage.removeItem('user_data');
-      }
-    }
-
     // Subscribe to auth state changes
     this.authService.authState.subscribe((user) => {
       if (user) {
         console.log('User logged in via service:', user);
-        // Store user data in localStorage
-        localStorage.setItem('user_data', JSON.stringify(user));
-        this.userSubject.next(user);
-        this.loggedInSubject.next(true);
+        // Store user data using the centralized auth service
+        this.storageService.storeUser(user);
         
         // Check if this is a page refresh or new login
-        const isRefresh = sessionStorage.getItem('userAlreadyLoggedIn') === 'true';
-        if (!isRefresh) {
-          sessionStorage.setItem('userAlreadyLoggedIn', 'true');
-          this.router.navigate([this.redirectUrl]);
+        if (!this.storageService.isRefreshLogin()) {
+          this.storageService.markUserLoggedIn();
+          this.router.navigate([this.storageService.getRedirectUrl()]);
         }
       } else {
         // Only clear user data if explicitly signed out
         // Don't clear on page refresh when authState temporarily returns null
-        if (!localStorage.getItem('user_data')) {
-          this.userSubject.next(null);
-          this.loggedInSubject.next(false);
-          sessionStorage.removeItem('userAlreadyLoggedIn');
+        if (!this.storageService.currentUser) {
+          this.storageService.clearStoredUser();
         }
       }
     });
   }
-
 
   signInWithFB(): Promise<SocialUser> {
     return this.authService.signIn(FacebookLoginProvider.PROVIDER_ID);
@@ -71,11 +49,8 @@ export class SocialLoginService {
   }
 
   signOut(): Promise<void> {
-    // First clear local storage and update subjects
-    localStorage.removeItem('user_data');
-    sessionStorage.removeItem('userAlreadyLoggedIn');
-    this.userSubject.next(null);
-    this.loggedInSubject.next(false);
+    // First clear storage using the auth service
+    this.storageService.clearStoredUser();
     
     // Then navigate to login page
     console.log('User signed out, navigating to login');
@@ -89,27 +64,28 @@ export class SocialLoginService {
       });
   }
 
+  // Delegate to auth service
   get user$(): Observable<SocialUser | null> {
-    return this.userSubject.asObservable();
+    return this.storageService.user$;
   }
 
   get isLoggedIn$(): Observable<boolean> {
-    return this.loggedInSubject.asObservable();
+    return this.storageService.isLoggedIn$;
   }
 
   get currentUser(): SocialUser | null {
-    return this.userSubject.value;
+    return this.storageService.currentUser;
   }
   
   get isLoggedIn(): boolean {
-    return this.loggedInSubject.value || !!localStorage.getItem('user_data');
+    return this.storageService.isLoggedIn;
   }
   
   setRedirectUrl(url: string): void {
-    this.redirectUrl = url;
+    this.storageService.setRedirectUrl(url);
   }
   
   getRedirectUrl(): string {
-    return this.redirectUrl;
+    return this.storageService.getRedirectUrl();
   }
 }

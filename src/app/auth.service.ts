@@ -1,31 +1,82 @@
 import { Injectable } from '@angular/core';
-import { SocialLoginService } from './social-login.service';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { SocialUser } from '@abacritt/angularx-social-login';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  constructor(private socialLoginService: SocialLoginService) {
-    // Check if we have a stored auth token
-    const storedAuth = localStorage.getItem('auth_token');
-    if (storedAuth) {
-      // This will be used to validate the token on app initialization
-      console.log('Found stored auth token');
+  private userSubject = new BehaviorSubject<SocialUser | null>(null);
+  private loggedInSubject = new BehaviorSubject<boolean>(false);
+  private redirectUrl: string = '/dashboard';
+
+  constructor(private router: Router) {
+    this.initializeFromStorage();
+  }
+
+  private initializeFromStorage(): void {
+    const storedUser = localStorage.getItem('user_data');
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        this.userSubject.next(user);
+        this.loggedInSubject.next(true);
+        console.log('Loaded user from localStorage:', user);
+      } catch (e) {
+        console.error('Error parsing stored user data');
+        this.clearStoredUser();
+      }
     }
   }
 
-  // Store authentication state in localStorage for persistence
-  storeAuthState(user: any): void {
-    if (user) {
-      localStorage.setItem('auth_token', 'true');
-    } else {
-      localStorage.removeItem('auth_token');
-    }
+  // User data storage methods
+  storeUser(user: SocialUser): void {
+    localStorage.setItem('user_data', JSON.stringify(user));
+    this.userSubject.next(user);
+    this.loggedInSubject.next(true);
   }
 
-  // Check if user is authenticated
-  isAuthenticated(): boolean {
-    return localStorage.getItem('auth_token') === 'true' || 
-           this.socialLoginService.isLoggedIn;
+  clearStoredUser(): void {
+    localStorage.removeItem('user_data');
+    sessionStorage.removeItem('userAlreadyLoggedIn');
+    this.userSubject.next(null);
+    this.loggedInSubject.next(false);
+  }
+
+  // Session tracking methods
+  markUserLoggedIn(): void {
+    sessionStorage.setItem('userAlreadyLoggedIn', 'true');
+  }
+
+  isRefreshLogin(): boolean {
+    return sessionStorage.getItem('userAlreadyLoggedIn') === 'true';
+  }
+
+  // Redirect URL methods
+  setRedirectUrl(url: string): void {
+    this.redirectUrl = url;
+  }
+  
+  getRedirectUrl(): string {
+    return this.redirectUrl;
+  }
+
+  // Observable getters
+  get user$(): Observable<SocialUser | null> {
+    return this.userSubject.asObservable();
+  }
+
+  get isLoggedIn$(): Observable<boolean> {
+    return this.loggedInSubject.asObservable();
+  }
+
+  // Value getters
+  get currentUser(): SocialUser | null {
+    return this.userSubject.value;
+  }
+  
+  get isLoggedIn(): boolean {
+    return this.loggedInSubject.value || !!localStorage.getItem('user_data');
   }
 }

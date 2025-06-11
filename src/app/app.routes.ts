@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from './auth.service';
+import { SocialLoginService } from './social-login.service';
 
 export const routes: Routes = [
   {
@@ -12,13 +14,11 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./login/login.component').then(m => m.LoginComponent),
     canActivate: [() => {
+      const authService = inject(AuthService);
       const router = inject(Router);
       
-      // Check localStorage directly for user data
-      const hasStoredUser = !!localStorage.getItem('user_data');
-      
       // If already logged in, redirect to dashboard
-      if (hasStoredUser) {
+      if (authService.isLoggedIn) {
         return router.createUrlTree(['/dashboard']);
       }
       return true;
@@ -28,13 +28,13 @@ export const routes: Routes = [
     path: 'dashboard',
     loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent),
     canActivate: [() => {
+      const authService = inject(AuthService);
+      const socialLoginService = inject(SocialLoginService);
       const router = inject(Router);
       
-      // Check localStorage directly for user data
-      const hasStoredUser = !!localStorage.getItem('user_data');
-      
       // If not logged in, redirect to login
-      if (!hasStoredUser) {
+      if (!authService.isLoggedIn) {
+        socialLoginService.setRedirectUrl('/dashboard');
         return router.createUrlTree(['/login']);
       }
       return true;
