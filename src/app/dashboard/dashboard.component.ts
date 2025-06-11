@@ -30,16 +30,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Get current user immediately
-    this.loggedIn = !!this.user;
+    // First try to get user from localStorage
+    const storedUserData = localStorage.getItem('user_data');
+    if (storedUserData) {
+      try {
+        this.user = JSON.parse(storedUserData);
+        this.loggedIn = true;
+        console.log('Dashboard: Loaded user from localStorage:', this.user);
+      } catch (e) {
+        console.error('Dashboard: Error parsing stored user data:', e);
+      }
+    }
     
     // Subscribe to user changes
     this.subscription.add(
      this.user$.subscribe({
         next: (user) => {
-          this.user = user;
-          this.loggedIn = !!user;
-          console.log('Dashboard: User state changed:', user);
+          if (user) {
+            this.user = user;
+            this.loggedIn = true;
+            console.log('Dashboard: User state changed:', user);
+          }
         },
         error: (error) => {
           console.error('Dashboard: User state error:', error);

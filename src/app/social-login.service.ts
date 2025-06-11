@@ -20,14 +20,43 @@ export class SocialLoginService {
     private authService: SocialAuthService,
     private router: Router
   ) {
+    // Check for stored user data on initialization
+    const storedUser = localStorage.getItem('user_data');
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        this.userSubject.next(user);
+        this.loggedInSubject.next(true);
+        console.log('Loaded user from localStorage:', user);
+      } catch (e) {
+        console.error('Error parsing stored user data');
+        localStorage.removeItem('user_data');
+      }
+    }
+
     // Subscribe to auth state changes
     this.authService.authState.subscribe((user) => {
-      this.userSubject.next(user);
-      this.loggedInSubject.next(!!user);
-      
       if (user) {
         console.log('User logged in via service:', user);
-        this.router.navigate([this.redirectUrl]);
+        // Store user data in localStorage
+        localStorage.setItem('user_data', JSON.stringify(user));
+        this.userSubject.next(user);
+        this.loggedInSubject.next(true);
+        
+        // Check if this is a page refresh or new login
+        const isRefresh = sessionStorage.getItem('userAlreadyLoggedIn') === 'true';
+        if (!isRefresh) {
+          sessionStorage.setItem('userAlreadyLoggedIn', 'true');
+          this.router.navigate([this.redirectUrl]);
+        }
+      } else {
+        // Only clear user data if explicitly signed out
+        // Don't clear on page refresh when authState temporarily returns null
+        if (!localStorage.getItem('user_data')) {
+          this.userSubject.next(null);
+          this.loggedInSubject.next(false);
+          sessionStorage.removeItem('userAlreadyLoggedIn');
+        }
       }
     });
   }
@@ -42,17 +71,21 @@ export class SocialLoginService {
   }
 
   signOut(): Promise<void> {
+    // First clear local storage and update subjects
+    localStorage.removeItem('user_data');
+    sessionStorage.removeItem('userAlreadyLoggedIn');
+    this.userSubject.next(null);
+    this.loggedInSubject.next(false);
+    
+    // Then navigate to login page
+    console.log('User signed out, navigating to login');
+    this.router.navigate(['/login']);
+    
+    // Finally, call the auth service signOut
     return this.authService.signOut()
-      .then(() => {
-        this.userSubject.next(null);
-        console.log('User signed out, navigating to login');
-        this.router.navigate(['/login']);
-      })
       .catch(error => {
         console.error('Error during sign out:', error);
-        // Still try to navigate even if there's an error
-        this.router.navigate(['/login']);
-        return Promise.reject(error);
+        return Promise.resolve(); // Don't reject, we've already cleared local state
       });
   }
 
@@ -69,7 +102,7 @@ export class SocialLoginService {
   }
   
   get isLoggedIn(): boolean {
-    return this.loggedInSubject.value;
+    return this.loggedInSubject.value || !!localStorage.getItem('user_data');
   }
   
   setRedirectUrl(url: string): void {

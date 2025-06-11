@@ -7,12 +7,25 @@ import { map, take } from 'rxjs';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'dashboard',
     pathMatch: 'full'
   },
   {
     path: 'login',
-    loadComponent: () => import('./login/login.component').then(m => m.LoginComponent)
+    loadComponent: () => import('./login/login.component').then(m => m.LoginComponent),
+    canActivate: [() => {
+      const socialLoginService = inject(SocialLoginService);
+      const router = inject(Router);
+      
+      // Check localStorage directly for user data
+      const hasStoredUser = !!localStorage.getItem('user_data');
+      
+      // If already logged in, redirect to dashboard
+      if (hasStoredUser) {
+        return router.createUrlTree(['/dashboard']);
+      }
+      return true;
+    }]
   },
   {
     path: 'dashboard',
@@ -21,17 +34,15 @@ export const routes: Routes = [
       const socialLoginService = inject(SocialLoginService);
       const router = inject(Router);
       
-      return socialLoginService.user$.pipe(
-        take(1),
-        map(user => {
-          const isLoggedIn = !!user;
-          if (isLoggedIn) {
-            return true;
-          }
-          socialLoginService.setRedirectUrl('/dashboard');
-          return router.createUrlTree(['/login']);
-        })
-      );
+      // Check localStorage directly for user data
+      const hasStoredUser = !!localStorage.getItem('user_data');
+      
+      // If not logged in, redirect to login
+      if (!hasStoredUser) {
+        socialLoginService.setRedirectUrl('/dashboard');
+        return router.createUrlTree(['/login']);
+      }
+      return true;
     }]
   }
 ];
