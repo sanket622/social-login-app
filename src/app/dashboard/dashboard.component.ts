@@ -23,6 +23,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loggedIn: boolean = false;
   user: SocialUser | null = null;
   private subscription = new Subscription();
+  
+  buttonData = { label: 'Edit Profile' };
 
   constructor(
     private socialLoginService: SocialLoginService
@@ -68,5 +70,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.socialLoginService.signOut()
       .catch(error => console.error('Logout error:', error));
     // No need to manually update user state as the subscription will handle it
+  }
+  
+  onDataReceived(data: any): void {
+    console.log('Modified data from library:', data);
   }
 }

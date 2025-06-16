@@ -43,7 +43,7 @@
         <h3>Your Profile</h3>
         <p>Complete your profile to get the most out of our app.</p>
         <!-- <button class="action-button">Edit Profile</button> -->
-        <lib-my-button></lib-my-button>
+        <lib-my-button [data]="buttonData" (dataChange)="onDataReceived($event)"></lib-my-button>
       </div>
       
       <div class="card">
