@@ -41,9 +41,9 @@ export class SocialLoginService {
     return this.authService.signIn(FacebookLoginProvider.PROVIDER_ID);
   }
   
-  signInWithGoogle(): Promise<SocialUser> {
-    return this.authService.signIn(GoogleLoginProvider.PROVIDER_ID);
-  }
+  // signInWithGoogle(): Promise<SocialUser> {
+  //   return this.authService.signIn(GoogleLoginProvider.PROVIDER_ID);
+  // }
 
   signOut(): Promise<void> {
     // First clear storage using the auth service
