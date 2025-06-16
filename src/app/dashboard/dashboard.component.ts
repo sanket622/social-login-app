@@ -8,11 +8,12 @@ import { CommonModule } from '@angular/common';
 import { SocialLoginService } from '../social-login.service';
 import { SocialUser } from '@abacritt/angularx-social-login';
 import { Observable, Subscription } from 'rxjs';
+import { MyButton } from 'my-library';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MyButton],
   templateUrl: './dashboard.component.html',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrls: ['./dashboard.component.css'],
